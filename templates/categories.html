@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Categorías | Agente Periodista{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3"><i class="bi bi-tag me-2"></i>Gestión de Categorías</h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <button id="btnNewCategory" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Categoría
+        </button>
+    </div>
+</div>
+
+<!-- Tabla de categorías -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="table-container">
+            <div id="categories-table">
+                <!-- La tabla se cargará dinámicamente con JavaScript -->
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando categorías...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Paginación -->
+<div id="categories-pagination" class="d-flex justify-content-center mt-3"></div>
+
+<!-- Modal para agregar/editar categoría -->
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="categoryModalTitle">Nueva Categoría</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <input type="hidden" id="categoria_id" value="">
+                    <div class="mb-3">
+                        <label for="categorias" class="form-label">Nombre de la categoría</label>
+                        <input type="text" class="form-control" id="categorias" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSaveCategory">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmar eliminación -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar eliminación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Está seguro de que desea eliminar esta categoría?</p>
+                <p class="text-danger"><small>Esta acción no se puede deshacer y podría afectar a las notas asociadas.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDeleteCategory">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/categories.js"></script>
+{% endblock %}

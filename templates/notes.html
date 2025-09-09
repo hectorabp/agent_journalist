@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Notas | Agente Periodista{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-journal-text me-2"></i>Gestión de Notas</h2>
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+        <i class="bi bi-plus-circle me-1"></i> Nueva Nota
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3"><i class="bi bi-funnel me-2"></i>Filtros</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="filterTitulo" placeholder="Título">
+                    <label for="filterTitulo">Título</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <select class="form-select" id="filterCategoria">
+                        <option value="">Todas las categorías</option>
+                        <!-- Se llenará dinámicamente -->
+                    </select>
+                    <label for="filterCategoria">Categoría</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <input type="date" class="form-control" id="filterFecha">
+                    <label for="filterFecha">Fecha modificación</label>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            <button id="btnApplyFilters" class="btn btn-primary me-2">
+                <i class="bi bi-search me-1"></i> Aplicar
+            </button>
+            <button id="btnClearFilters" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i> Limpiar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de notas -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <div id="notes-table" class="table-container"></div>
+        </div>
+        <div id="notes-pagination" class="d-flex justify-content-center mt-3"></div>
+    </div>
+</div>
+
+<!-- Modal para añadir nota -->
+<div class="modal fade" id="addNoteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nueva Nota</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addNoteForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                <label for="titulo">Título *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <select class="form-select" id="id_categoria" name="id_categoria" required>
+                                    <option value="" disabled selected>Seleccione una categoría</option>
+                                    <!-- Se llenará dinámicamente -->
+                                </select>
+                                <label for="id_categoria">Categoría *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="form-floating">
+                                <select class="form-select" id="link_id" name="link_id" required>
+                                    <option value="" disabled selected>Seleccione un link</option>
+                                    <!-- Se llenará dinámicamente -->
+                                </select>
+                                <label for="link_id">Link asociado *</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label for="content" class="form-label">Contenido de la nota</label>
+                            <textarea class="form-control" id="content" name="content" rows="10"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="btnSaveNote">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para ver/editar nota -->
+<div class="modal fade" id="viewNoteModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="viewNoteTitle">Detalle de Nota</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="note-info mb-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <p><strong>Categoría:</strong> <span id="viewNoteCategoria"></span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Link asociado:</strong> <span id="viewNoteLink"></span></p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><strong>Última modificación:</strong> <span id="viewNoteFecha"></span></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="note-content">
+                    <form id="editNoteForm">
+                        <input type="hidden" id="edit_nota_id" name="nota_id">
+                        <div class="mb-3">
+                            <label for="edit_content" class="form-label">Contenido</label>
+                            <textarea class="form-control" id="edit_content" name="new_content" rows="15"></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" id="btnUpdateNote">Guardar cambios</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/notes.js"></script>
+{% endblock %}

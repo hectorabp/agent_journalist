@@ -1,0 +1,69 @@
+
+
+services:
+
+  agent_dashboard:
+    build: .
+    container_name: agent_dashboard
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - TZ=America/Asuncion
+    depends_on:
+      - db_agent
+    networks:
+      - platcom_net
+    volumes:
+      - ./notas:/app/notas
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.agent.rule=PathPrefix(`/agent`)"
+      - "traefik.http.routers.agent.entrypoints=web"
+      - "traefik.http.services.agent.loadbalancer.server.port=5000"
+      - "traefik.http.routers.agent.middlewares=agent-strip"
+      - "traefik.http.middlewares.agent-strip.stripprefix.prefixes=/agent"
+
+  db_agent:
+    image: mysql:8.0
+    networks:
+      - platcom_net
+    container_name: db_agent
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: sdfdsfs1110477
+      MYSQL_DATABASE: agent
+    volumes:
+      - dbdata_agent:/var/lib/mysql
+    restart: always
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: admin_mysql
+    restart: always
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOSTS: db_agent
+      MYSQL_ROOT_PASSWORD: sdfdsfs1110477
+    networks:
+      - platcom_net
+    labels:
+      - "traefik.enable=true"
+      # Usar ruta anidada para evitar conflicto con phpmyadmin existente en el VPS
+      - "traefik.http.routers.agent-phpmyadmin.rule=PathPrefix(`/agent/phpmyadmin`)"
+      - "traefik.http.routers.agent-phpmyadmin.entrypoints=web"
+      - "traefik.http.services.agent-phpmyadmin.loadbalancer.server.port=80"
+      - "traefik.http.routers.agent-phpmyadmin.middlewares=agent-phpmyadmin-strip"
+      - "traefik.http.middlewares.agent-phpmyadmin-strip.stripprefix.prefixes=/agent/phpmyadmin"
+
+networks:
+  platcom_net:
+    external: true
+    name: platcom_net
+
+volumes:
+  postgres_data:
+  n8n_data:
+  dbdata_agent:

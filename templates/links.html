@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Links | Agente Periodista{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-link-45deg me-2"></i>Gestión de Links</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLinkModal">
+        <i class="bi bi-plus-circle me-1"></i> Nuevo Link
+    </button>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4 border-0 shadow-sm">
+    <div class="card-body">
+        <h5 class="card-title mb-3"><i class="bi bi-funnel me-2"></i>Filtros</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="filterMedio" placeholder="Medio">
+                    <label for="filterMedio">Medio</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="filterTitulo" placeholder="Título">
+                    <label for="filterTitulo">Título</label>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-floating">
+                    <select class="form-select" id="filterNota">
+                        <option value="">Todos</option>
+                        <option value="Si">Con nota</option>
+                        <option value="No">Sin nota</option>
+                    </select>
+                    <label for="filterNota">Estado de nota</label>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex justify-content-end mt-3">
+            <button id="btnApplyFilters" class="btn btn-primary me-2">
+                <i class="bi bi-search me-1"></i> Aplicar
+            </button>
+            <button id="btnClearFilters" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle me-1"></i> Limpiar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de links -->
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <div id="links-table" class="table-container"></div>
+        </div>
+        <div id="links-pagination" class="d-flex justify-content-center mt-3"></div>
+    </div>
+</div>
+
+<!-- Modal para añadir link -->
+<div class="modal fade" id="addLinkModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-plus-circle me-2"></i>Nuevo Link</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addLinkForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="medio" name="medio" required>
+                                <label for="medio">Medio *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="titulo" name="titulo" required>
+                                <label for="titulo">Título *</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <input type="url" class="form-control" id="link" name="link" required>
+                                <label for="link">URL del Link *</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="createNote" name="createNote">
+                                <label class="form-check-label" for="createNote">Crear nota asociada</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnSaveLink">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar link -->
+<div class="modal fade" id="editLinkModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-pencil-square me-2"></i>Editar Link</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editLinkForm">
+                    <input type="hidden" id="edit_link_id" name="link_id">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="edit_medio" name="medio" required>
+                                <label for="edit_medio">Medio *</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating">
+                                <input type="text" class="form-control" id="edit_titulo" name="titulo" required>
+                                <label for="edit_titulo">Título *</label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="form-floating">
+                                <input type="url" class="form-control" id="edit_link" name="link" required>
+                                <label for="edit_link">URL del Link *</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btnUpdateLink">Actualizar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/links.js"></script>
+{% endblock %}

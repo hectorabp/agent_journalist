@@ -1,0 +1,181 @@
+/* Estilos generales */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Encabezado */
+header {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+/* Navegación */
+.navbar {
+    padding: 0.5rem 1rem;
+}
+
+.navbar .nav-link {
+    font-weight: 500;
+    padding: 0.8rem 1rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.navbar .nav-link:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.navbar .nav-link.active {
+    color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+/* Tarjetas */
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Iconos de características */
+.feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+}
+
+/* Tablas */
+.table-container {
+    overflow-x: auto;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 1rem;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    padding: 1rem;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Botones de acción en tablas */
+.action-buttons .btn {
+    padding: 0.25rem 0.5rem;
+    margin-right: 0.25rem;
+}
+
+/* Paginación */
+.pagination {
+    margin-bottom: 0;
+}
+
+.pagination .page-link {
+    border-radius: 4px;
+    margin: 0 2px;
+    color: #0d6efd;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Formularios */
+.form-floating > .form-control,
+.form-floating > .form-select {
+    height: calc(3.5rem + 2px);
+    line-height: 1.25;
+}
+
+.form-floating > label {
+    padding: 1rem 0.75rem;
+}
+
+/* Estadísticas */
+.stat-item {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+}
+
+/* Modo oscuro */
+.dark-mode {
+    background-color: #222;
+    color: #f8f9fa;
+}
+
+.dark-mode .card,
+.dark-mode .modal-content,
+.dark-mode .navbar,
+.dark-mode .stat-item {
+    background-color: #333;
+    color: #f8f9fa;
+}
+
+.dark-mode .table th {
+    background-color: #444;
+    color: #f8f9fa;
+    border-bottom: 2px solid #555;
+}
+
+.dark-mode .table td {
+    border-bottom: 1px solid #555;
+}
+
+.dark-mode .table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select {
+    background-color: #444;
+    border-color: #555;
+    color: #f8f9fa;
+}
+
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+    background-color: #444;
+    color: #f8f9fa;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table th, .table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .action-buttons .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.8rem;
+    }
+}

@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Agente Periodista{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12 text-center mb-4">
+        <h2 class="display-5 fw-bold">Bienvenido al sistema Agente Periodista</h2>
+        <p class="lead">Gestiona links periodísticos y notas asociadas de manera sencilla.</p>
+    </div>
+</div>
+
+<div class="row g-4 py-3">
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 hover-card">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-primary bg-gradient text-white mb-3">
+                    <i class="bi bi-link-45deg"></i>
+                </div>
+                <h3 class="card-title">Gestión de Links</h3>
+                <p class="card-text">Registra y organiza links periodísticos relevantes para tu investigación.</p>
+                <a href="/links" class="btn btn-primary mt-3">
+                    <i class="bi bi-arrow-right-circle me-1"></i> Ir a Links
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100 shadow-sm border-0 hover-card">
+            <div class="card-body text-center p-4">
+                <div class="feature-icon bg-success bg-gradient text-white mb-3">
+                    <i class="bi bi-journal-text"></i>
+                </div>
+                <h3 class="card-title">Gestión de Notas</h3>
+                <p class="card-text">Crea y edita notas asociadas a tus links, organizadas por categorías.</p>
+                <a href="/notes" class="btn btn-success mt-3">
+                    <i class="bi bi-arrow-right-circle me-1"></i> Ir a Notas
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card border-0 bg-light">
+            <div class="card-body p-4">
+                <h4 class="card-title"><i class="bi bi-info-circle me-2"></i>Estadísticas</h4>
+                <div class="row text-center" id="stats-container">
+                    <div class="col-md-4">
+                        <div class="stat-item p-3">
+                            <h5>Links registrados</h5>
+                            <p class="display-6 fw-bold" id="links-count">...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item p-3">
+                            <h5>Notas creadas</h5>
+                            <p class="display-6 fw-bold" id="notes-count">...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-item p-3">
+                            <h5>Categorías</h5>
+                            <p class="display-6 fw-bold" id="categories-count">...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row text-center mt-4">
+                    <div class="col-md-3">
+                        <div class="stat-item p-3">
+                            <h6>Notas creadas hoy</h6>
+                            <p class="fw-bold mb-0" id="notes-today">...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item p-3">
+                            <h6>Links sin nota</h6>
+                            <p class="fw-bold mb-0" id="links-without-note">...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item p-3">
+                            <h6>Notas con link</h6>
+                            <p class="fw-bold mb-0" id="notes-with-link">...</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-item p-3">
+                            <h6>Notas sin link</h6>
+                            <p class="fw-bold mb-0" id="notes-without-link">...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Cargar estadísticas ampliadas
+document.addEventListener('DOMContentLoaded', function() {
+    // Links
+    ajaxRequest('GET', '/links/all', null, function(status, response) {
+        let links = [];
+        if(status === 200) {
+            links = JSON.parse(response).result;
+            document.getElementById('links-count').textContent = links.length;
+            // Links sin nota asociada
+            const linksWithoutNote = links.filter(l => l.nota === 'No').length;
+            document.getElementById('links-without-note').textContent = linksWithoutNote;
+        } else {
+            document.getElementById('links-count').textContent = '0';
+            document.getElementById('links-without-note').textContent = '0';
+        }
+    });
+
+    // Notas y categorías
+    let categories = [];
+    ajaxRequest('GET', '/categories/all', null, function(status, response) {
+        if(status === 200) {
+            categories = JSON.parse(response).result;
+            document.getElementById('categories-count').textContent = categories.length;
+        } else {
+            document.getElementById('categories-count').textContent = '0';
+        }
+    });
+
+    ajaxRequest('GET', '/notes/all', null, function(status, response) {
+        let notes = [];
+        if(status === 200) {
+            notes = JSON.parse(response).result;
+            document.getElementById('notes-count').textContent = notes.length;
+
+            // Notas creadas hoy
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const notesToday = notes.filter(n => {
+                let d = n.ultima_modificacion;
+                if (typeof d === 'string') {
+                    if (d.match(/^[A-Za-z]{3},/)) {
+                        d = new Date(d).toISOString().split('T')[0];
+                    } else if (d.includes('T')) {
+                        d = d.split('T')[0];
+                    } else if (d.includes(' ')) {
+                        d = d.split(' ')[0];
+                    }
+                } else if (d instanceof Date) {
+                    d = d.toISOString().split('T')[0];
+                }
+                return d === todayStr;
+            }).length;
+            document.getElementById('notes-today').textContent = notesToday;
+
+            // Notas con link
+            const notesWithLink = notes.filter(n => n.id_link !== null && n.id_link !== undefined).length;
+            document.getElementById('notes-with-link').textContent = notesWithLink;
+            // Notas sin link
+            const notesWithoutLink = notes.filter(n => !n.id_link).length;
+            document.getElementById('notes-without-link').textContent = notesWithoutLink;
+        } else {
+            document.getElementById('notes-count').textContent = '0';
+            document.getElementById('notes-today').textContent = '0';
+            document.getElementById('notes-with-link').textContent = '0';
+            document.getElementById('notes-without-link').textContent = '0';
+        }
+    });
+});
+</script>
+{% endblock %}
