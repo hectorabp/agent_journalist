@@ -1,4 +1,5 @@
 from flask import Flask
+from werkzeug.middleware.proxy_fix import ProxyFix
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -16,9 +17,12 @@ def create_app():
     app.register_blueprint(notes_txt_blueprint, url_prefix="/")
     app.register_blueprint(categories_blueprint, url_prefix="/")
     app.register_blueprint(web_blueprint, url_prefix="/")
+
+	# ProxyFix para soportar cabeceras estándar de proxy
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1, x_prefix=1)
     return app
 
-# Iniciar la aplicación
-if __name__ == "__main__":
-    app = create_app()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+app = create_app()
+
+if __name__ == '__main__':
+	app.run(host='0.0.0.0', port=5001, debug=True)
