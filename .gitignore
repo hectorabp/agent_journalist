@@ -15,7 +15,6 @@ venv/
 node_modules/
 
 # Data and secrets
-notas/
 *.sqlite3
 *.db
 
