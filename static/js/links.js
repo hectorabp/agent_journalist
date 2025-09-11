@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Cargar todos los links
 function loadLinks() {
-    ajaxRequest('GET', '/agent-journalist/links/all', null, function(status, response) {
+    ajaxRequest('GET', '/links/all', null, function(status, response) {
         if(status === 200) {
             allLinks = JSON.parse(response).result;
             filteredLinks = [...allLinks];
