@@ -29,34 +29,12 @@ services:
     networks:
       - platcom_net
     container_name: db_agent
-    ports:
-      - "3306:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: sdfdsfs1110477
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: agent
     volumes:
       - dbdata_agent:/var/lib/mysql
     restart: always
-
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
-    container_name: admin_mysql
-    restart: always
-    ports:
-      - "8082:80"
-    environment:
-      PMA_HOSTS: db_agent
-      MYSQL_ROOT_PASSWORD: sdfdsfs1110477
-    networks:
-      - platcom_net
-    labels:
-      - "traefik.enable=true"
-      # Usar ruta anidada para evitar conflicto con phpmyadmin existente en el VPS
-      - "traefik.http.routers.agent-phpmyadmin.rule=PathPrefix(`/agent/phpmyadmin`)"
-      - "traefik.http.routers.agent-phpmyadmin.entrypoints=web"
-      - "traefik.http.services.agent-phpmyadmin.loadbalancer.server.port=80"
-      - "traefik.http.routers.agent-phpmyadmin.middlewares=agent-phpmyadmin-strip"
-      - "traefik.http.middlewares.agent-phpmyadmin-strip.stripprefix.prefixes=/agent/phpmyadmin"
 
 networks:
   platcom_net:
