@@ -8,6 +8,11 @@ services:
     restart: unless-stopped
     environment:
       - TZ=America/Asuncion
+      - MYSQL_HOST=db_agent
+      - MYSQL_PORT=3306
+      - MYSQL_USER=root
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=agent
     depends_on:
       - db_agent
     networks:

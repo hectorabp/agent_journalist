@@ -8,11 +8,11 @@ load_dotenv()
 
 class Database:
     def __init__(self):
-        self.host = "db_agent"
-        self.port = "3306"
-        self.user = "root"
-        self.password = "sdfdsfs1110477"
-        self.database = "agent"
+        self.host = os.getenv('MYSQL_HOST')
+        self.port = os.getenv('MYSQL_PORT')
+        self.user = os.getenv('MYSQL_USER')
+        self.password = os.getenv('MYSQL_ROOT_PASSWORD')
+        self.database = os.getenv('MYSQL_DATABASE')
         self.connection = None
         self.cursor = None
 
