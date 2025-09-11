@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Función para cargar todas las categorías
 function loadCategories() {
-    ajaxRequest('GET', '/categories/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/categories/all', null, function(status, response) {
         if (status === 200) {
             const data = JSON.parse(response);
             if (data.status) {
@@ -107,12 +107,12 @@ function saveCategory() {
     if (categoriaId) {
         // Actualizar categoría existente
         method = 'PUT';
-        url = '/categories/update';
+        url = '/agent-journalist/categories/update';
         data.categoria_id = parseInt(categoriaId);
     } else {
         // Crear nueva categoría
         method = 'POST';
-        url = '/categories/create';
+        url = '/agent-journalist/categories/create';
     }
     
     ajaxRequest(method, url, data, function(status, response) {
@@ -162,7 +162,7 @@ function deleteCategory(categoriaId) {
 function confirmDeleteCategory() {
     if (!categoryToDelete) return;
     
-    ajaxRequest('DELETE', '/categories/delete', { categoria_id: categoryToDelete }, function(status, response) {
+    ajaxRequest('DELETE', '/agent-journalist/categories/delete', { categoria_id: categoryToDelete }, function(status, response) {
         if (status === 200) {
             const data = JSON.parse(response);
             if (data.status) {

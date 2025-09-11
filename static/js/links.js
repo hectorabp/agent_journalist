@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Cargar todos los links
 function loadLinks() {
-    ajaxRequest('GET', '/links/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/links/all', null, function(status, response) {
         if(status === 200) {
             allLinks = JSON.parse(response).result;
             filteredLinks = [...allLinks];
@@ -122,7 +122,7 @@ function saveNewLink() {
         nota: createNote ? 'Si' : 'No'
     };
     
-    ajaxRequest('POST', '/links/create', data, function(status, response) {
+    ajaxRequest('POST', '/agent-journalist/links/create', data, function(status, response) {
         const result = JSON.parse(response);
         if (status === 200 && result.status) {
             // Cerrar modal y limpiar formulario
@@ -148,7 +148,7 @@ function saveNewLink() {
 
 // Editar link
 function editLink(linkId) {
-    ajaxRequest('GET', `/links/read?link_id=${linkId}`, null, function(status, response) {
+    ajaxRequest('GET', `/agent-journalist/links/read?link_id=${linkId}`, null, function(status, response) {
         if (status === 200) {
             const link = JSON.parse(response).result;
             if (link) {
@@ -187,7 +187,7 @@ function updateLink() {
         }
     };
     
-    ajaxRequest('PUT', '/links/update', data, function(status, response) {
+    ajaxRequest('PUT', '/agent-journalist/links/update', data, function(status, response) {
         const result = JSON.parse(response);
         if (status === 200 && result.status) {
             // Cerrar modal
@@ -221,7 +221,7 @@ function deleteLink(linkId) {
 // Crear nota para un link
 function createNoteForLink(linkId) {
     // Redirigir a la página de notas con el ID del link
-    window.location.href = `/notes?link_id=${linkId}`;
+    window.location.href = `/agent-journalist/notes?link_id=${linkId}`;
 }
 
 // Aplicar filtros
@@ -256,14 +256,14 @@ function clearFilters() {
 // Añadir función para ver la nota asociada a un link
 function viewNoteForLink(linkId) {
     // Buscar la nota asociada al link
-    ajaxRequest('GET', '/notes/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/notes/all', null, function(status, response) {
         if(status === 200) {
             const notes = JSON.parse(response).result;
             const noteForLink = notes.find(note => note.id_link === linkId);
             
             if (noteForLink) {
                 // Redirigir a la página de notas y abrir el modal de visualización
-                window.location.href = `/notes?view_note=${noteForLink.id}`;
+                window.location.href = `/agent-journalist/notes?view_note=${noteForLink.id}`;
             } else {
                 showSystemMessage('Información', 'No se encontró una nota asociada a este link', 'info');
             }

@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Cargar todas las notas
 function loadNotes() {
-    ajaxRequest('GET', '/notes/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/notes/all', null, function(status, response) {
         if(status === 200) {
             allNotes = JSON.parse(response).result;
             notesLoaded = true;
@@ -67,7 +67,7 @@ function loadNotes() {
 
 // Cargar categorías
 function loadCategories() {
-    ajaxRequest('GET', '/categories/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/categories/all', null, function(status, response) {
         if(status === 200) {
             allCategories = JSON.parse(response).result;
             categoriesLoaded = true;
@@ -79,7 +79,7 @@ function loadCategories() {
 
 // Cargar links
 function loadLinks() {
-    ajaxRequest('GET', '/links/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/links/all', null, function(status, response) {
         if(status === 200) {
             allLinks = JSON.parse(response).result;
             linksLoaded = true;
@@ -307,7 +307,7 @@ function saveNewNote() {
     };
     if (link_id) data.link_id = link_id;
 
-    ajaxRequest('POST', '/notes/create', data, function(status, response) {
+    ajaxRequest('POST', '/agent-journalist/notes/create', data, function(status, response) {
         const result = JSON.parse(response);
         if (status === 200 && result.status) {
             // Cerrar modal y limpiar formulario
@@ -327,7 +327,7 @@ function saveNewNote() {
 
 // Ver/Editar nota
 function viewNote(noteId) {
-    ajaxRequest('GET', `/notes/read?nota_id=${noteId}`, null, function(status, response) {
+    ajaxRequest('GET', `/agent-journalist/notes/read?nota_id=${noteId}`, null, function(status, response) {
         if (status === 200) {
             const result = JSON.parse(response).result;
             if (result) {
@@ -378,7 +378,7 @@ function updateNote() {
     if (newIdCategoria) data.new_id_categoria = newIdCategoria;
     if (newIdLink !== null) data.new_id_link = newIdLink;
 
-    ajaxRequest('PUT', '/notes/edit', data, function(status, response) {
+    ajaxRequest('PUT', '/agent-journalist/notes/edit', data, function(status, response) {
         const result = JSON.parse(response);
         if (status === 200 && result.status) {
             // Cerrar modal

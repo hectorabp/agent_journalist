@@ -146,5 +146,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/links.js"></script>
+<script src="{{ url_for('static', filename='js/links.js') }}"></script>
 {% endblock %}

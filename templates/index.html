@@ -17,7 +17,7 @@
                 </div>
                 <h3 class="card-title">Gestión de Links</h3>
                 <p class="card-text">Registra y organiza links periodísticos relevantes para tu investigación.</p>
-                <a href="/links" class="btn btn-primary mt-3">
+                <a href="/agent-journalist/links" class="btn btn-primary mt-3">
                     <i class="bi bi-arrow-right-circle me-1"></i> Ir a Links
                 </a>
             </div>
@@ -32,7 +32,7 @@
                 </div>
                 <h3 class="card-title">Gestión de Notas</h3>
                 <p class="card-text">Crea y edita notas asociadas a tus links, organizadas por categorías.</p>
-                <a href="/notes" class="btn btn-success mt-3">
+                <a href="/agent-journalist/notes" class="btn btn-success mt-3">
                     <i class="bi bi-arrow-right-circle me-1"></i> Ir a Notas
                 </a>
             </div>
@@ -102,7 +102,7 @@
 // Cargar estadísticas ampliadas
 document.addEventListener('DOMContentLoaded', function() {
     // Links
-    ajaxRequest('GET', '/links/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/links/all', null, function(status, response) {
         let links = [];
         if(status === 200) {
             links = JSON.parse(response).result;
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Notas y categorías
     let categories = [];
-    ajaxRequest('GET', '/categories/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/categories/all', null, function(status, response) {
         if(status === 200) {
             categories = JSON.parse(response).result;
             document.getElementById('categories-count').textContent = categories.length;
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    ajaxRequest('GET', '/notes/all', null, function(status, response) {
+    ajaxRequest('GET', '/agent-journalist/notes/all', null, function(status, response) {
         let notes = [];
         if(status === 200) {
             notes = JSON.parse(response).result;

@@ -148,5 +148,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/static/js/notes.js"></script>
+<script src="{{ url_for('static', filename='js/notes.js') }}"></script>
 {% endblock %}
