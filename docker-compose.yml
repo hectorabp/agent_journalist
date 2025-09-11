@@ -40,6 +40,4 @@ networks:
     name: platcom_net
 
 volumes:
-  postgres_data:
-  n8n_data:
   dbdata_agent:
