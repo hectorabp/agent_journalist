@@ -18,7 +18,6 @@ class Database:
 
     def connect_bd(self):
         try:
-            print(f"Host: {self.host}, Port: {self.port}, User: {self.user}, Password: {self.password}, Database: {self.database}")
             self.connection = mysql.connector.connect(
                 host=self.host,
                 port=int(self.port),
