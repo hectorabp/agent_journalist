@@ -43,7 +43,7 @@ class Notes:
         """
         Obtiene todos los registros de la tabla notas.
         """
-        query = "SELECT * FROM notas"
+        query = "SELECT * FROM notas ORDER BY ultima_modificacion DESC"
         return self.db.query(query)
 
     def update(self, nota_id, data):
