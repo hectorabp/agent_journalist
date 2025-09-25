@@ -43,7 +43,7 @@ class Links:
         """
         Obtiene todos los registros de la tabla links.
         """
-        query = "SELECT * FROM links"
+        query = "SELECT * FROM links ORDER BY fecha DESC"
         return self.db.query(query)
 
     def update(self, link_id, data):
