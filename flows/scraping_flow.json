@@ -1,0 +1,2300 @@
+{
+  "name": "scraping_flow",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://www.ultimahora.com/economia",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -192,
+        -160
+      ],
+      "id": "26023ccf-0246-4194-87f0-64548749d103",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".PageList-items-item .PagePromo-content .PagePromo-title a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": ".PageList-items-item .PagePromo-content .PagePromo-title a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        -160
+      ],
+      "id": "6db54b91-bfa5-46c7-ba86-24a5b00a6495",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.search }}",
+        "options": {
+          "systemMessage": "=Eres un asistente especializado en filtrar noticias.\n\nTienes como entrada un objeto con dos campos:\n- \"title\": el título de la noticia\n- \"link\": el enlace de la noticia\n\nTu tarea es:\n1. Revisar si el título contiene alguna de estas palabras clave o está relacionado directamente con ellas:\n   Emprender\n   Emprendedor\n   Emprendedora\n   Emprendedores\n   Emprendimiento\n   Mipymes\n   Mipyme\n   Micro, pequeñas y medianas empresas\n   Pyme\n   Economía\n   Comercio electrónico\n   eCommerce\n   Paraguayos por el mundo\n\n2. Si coincide con al menos una palabra clave, devuelve un **array JSON válido** con todos los objetos encontrados.  \nEjemplo de salida:\n\n[\n  {\n    \"title\": \"Noticia 1\",\n    \"link\": \"https://...\"\n  },\n  {\n    \"title\": \"Noticia 2\",\n    \"link\": \"https://...\"\n  }\n]\n\n3. Si no coincide ninguna, devuelve un array vacío: []\n4. Es posible que algunas letras sean \"�\" reemplazalas por lo que creas conveniente ejemplo si dice \"Canci�n\" entonces seria \"Canción\" y así para todas las vocales con tildes y \"ñ\".\n5. Solo retorna entre 1 y 5 coincidencias no más\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        -160
+      ],
+      "id": "39acc7d3-f1f2-4fb9-8fae-e2cade78cbb3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\").toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\n  search.push({\n    title: fixEncoding(titles[i]),\n    link: links[i] || null,\n  });\n}\n\nreturn [\n  {\n    json: {\n      search\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -160
+      ],
+      "id": "0a90ffb8-9fe3-46ec-9fed-2951b47b3ef0",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        -160
+      ],
+      "id": "464f9ae7-c45e-47f0-b57c-67ced148648b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        128
+      ],
+      "id": "51d758f3-53af-4182-b6f3-5056587a4398",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a7a9669-4922-4c4e-8109-5640fe4888ce",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        -160
+      ],
+      "id": "8ace8538-28aa-4ea3-88d9-b294899e7a04",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/links/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "medio",
+              "value": "ULTIMA HORA"
+            },
+            {
+              "name": "titulo",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $json.link }}"
+            },
+            {
+              "name": "fecha",
+              "value": "={{ $now }}"
+            },
+            {
+              "name": "nota",
+              "value": "No"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1408,
+        -160
+      ],
+      "id": "ad4bf38b-9c78-4e2c-ac87-09d42ece404a",
+      "name": "HTTP Request1",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.forbes.com.py/",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text",
+              "outputPropertyName": "html"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -208,
+        320
+      ],
+      "id": "a3899b25-5305-4639-b610-952965ff98ad",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "html",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".grilla-comon .row .col-md-6 .box .info a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": ".grilla-comon .row .col-md-6 .box .info a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        320
+      ],
+      "id": "48d83680-3b24-40ba-bf85-043f17b446e8",
+      "name": "HTML1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\").toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\n  search.push({\n    title: fixEncoding(titles[i]),\n    link: links[i] || null,\n  });\n}\n\nreturn [\n  {\n    json: {\n      search\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        320
+      ],
+      "id": "e62b42ed-5c08-4be5-a647-fc2f056bab08",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        432,
+        320
+      ],
+      "id": "13498927-dcc2-4b9f-88b0-330826771719",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/links/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "medio",
+              "value": "FORBES PY"
+            },
+            {
+              "name": "titulo",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $json.link }}"
+            },
+            {
+              "name": "fecha",
+              "value": "={{ $now }}"
+            },
+            {
+              "name": "nota",
+              "value": "No"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        320
+      ],
+      "id": "1ffb6aae-e49c-46e7-ac4c-49b4a0b19bad",
+      "name": "HTTP Request3",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        608,
+        528
+      ],
+      "id": "d71ec1b9-f469-4c7c-82cb-64ab4e8fda55",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.search }}",
+        "options": {
+          "systemMessage": "=Eres un asistente especializado en filtrar noticias.\n\nTienes como entrada un objeto con dos campos:\n- \"title\": el título de la noticia\n- \"link\": el enlace de la noticia\n\nTu tarea es:\n1. Revisar si el título contiene alguna de estas palabras clave o está relacionado directamente con ellas:\n   Emprender\n   Emprendedor\n   Emprendedora\n   Emprendedores\n   Emprendimiento\n   Mipymes\n   Mipyme\n   Micro, pequeñas y medianas empresas\n   Pyme\n   Economía\n   Comercio electrónico\n   eCommerce\n   Paraguayos por el mundo\n\n2. Si coincide con al menos una palabra clave, devuelve un **array JSON válido** con todos los objetos encontrados.  \nEjemplo de salida:\n\n[\n  {\n    \"title\": \"Noticia 1\",\n    \"link\": \"https://...\"\n  },\n  {\n    \"title\": \"Noticia 2\",\n    \"link\": \"https://...\"\n  }\n]\n\n3. Si no coincide ninguna, devuelve un array vacío: []\n4. Es posible que algunas letras sean \"�\" reemplazalas por lo que creas conveniente ejemplo si dice \"Canci�n\" entonces seria \"Canción\" y así para todas las vocales con tildes y \"ñ\".\n5. Solo retorna entre 1 y 5 coincidencias no más\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        656,
+        320
+      ],
+      "id": "985e5b0b-932d-47ea-a8df-866784b3ace8",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "83675318-6098-4ee3-8f13-029887948a2c",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        992,
+        320
+      ],
+      "id": "af03b331-1f0a-4a1a-b506-4e757d76f392",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Repara caracteres mal codificados típicos (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  return str\n    .replace(/�/g, \"ñ\")   // ñ\n    .replace(/Ã¡/g, \"á\")  // á\n    .replace(/Ã©/g, \"é\")  // é\n    .replace(/Ã­/g, \"í\")  // í\n    .replace(/Ã³/g, \"ó\")  // ó\n    .replace(/Ãº/g, \"ú\")  // ú\n    .replace(/Ã±/g, \"ñ\")  // ñ\n    .replace(/\\s+/g, \" \") // limpia saltos de línea\n    .trim();\n}\n\nconst output = items[0].json.output || [];\nconst results = [];\n\nfor (let i = 0; i < output.length; i++) {\n  results.push({\n    json: {\n      title: fixEncoding(output[i].title),\n      link: output[i].link\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        320
+      ],
+      "id": "02a3c254-e863-4600-9d4c-edf5510cb1d6",
+      "name": "Code2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Repara caracteres mal codificados típicos (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  return str\n    .replace(/�/g, \"ñ\")   // ñ\n    .replace(/Ã¡/g, \"á\")  // á\n    .replace(/Ã©/g, \"é\")  // é\n    .replace(/Ã­/g, \"í\")  // í\n    .replace(/Ã³/g, \"ó\")  // ó\n    .replace(/Ãº/g, \"ú\")  // ú\n    .replace(/Ã±/g, \"ñ\")  // ñ\n    .replace(/\\s+/g, \" \") // limpia saltos de línea\n    .trim();\n}\n\nconst output = items[0].json.output || [];\nconst results = [];\n\nfor (let i = 0; i < output.length; i++) {\n  results.push({\n    json: {\n      title: fixEncoding(output[i].title),\n      link: output[i].link\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        -160
+      ],
+      "id": "8b60e022-de37-4a28-8fad-fbd6344f2108",
+      "name": "Code3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.lanacion.com.py/category/negocios/",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "text",
+              "outputPropertyName": "html"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        768
+      ],
+      "id": "77a009d5-501f-43bf-99ff-095cf5fc9cba",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "dataPropertyName": "html",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".section-body .container .cgg .ggi-1 .post-list .ccol .cln .clnc .tc a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": ".section-body .container .cgg .ggi-1 .post-list .ccol .cln .clnc .tc a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -16,
+        768
+      ],
+      "id": "0d3ed746-df4d-4d0e-af4d-f6041aace180",
+      "name": "HTML2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\").toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\n  search.push({\n    title: fixEncoding(titles[i]),\n    link: links[i] || null,\n  });\n}\n\nreturn [\n  {\n    json: {\n      search\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        768
+      ],
+      "id": "0f2e7308-a48f-4818-b0f5-cdf574f57015",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        768
+      ],
+      "id": "26c587b8-01f6-4aec-8eec-8bda29ba2687",
+      "name": "Edit Fields4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/links/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "medio",
+              "value": "LA NACIÓN"
+            },
+            {
+              "name": "titulo",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "link",
+              "value": "=https://www.lanacion.com.py{{ $json.link }}"
+            },
+            {
+              "name": "fecha",
+              "value": "={{ $now }}"
+            },
+            {
+              "name": "nota",
+              "value": "No"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1472,
+        768
+      ],
+      "id": "ec917288-58f4-4c39-bda2-9bcc7cdf77e9",
+      "name": "HTTP Request5",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "executeOnce": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.search }}",
+        "options": {
+          "systemMessage": "=Eres un asistente especializado en filtrar noticias.\n\nTienes como entrada un objeto con dos campos:\n- \"title\": el título de la noticia\n- \"link\": el enlace de la noticia\n\nTu tarea es:\n1. Revisar si el título contiene alguna de estas palabras clave o está relacionado directamente con ellas:\n   Emprender\n   Emprendedor\n   Emprendedora\n   Emprendedores\n   Emprendimiento\n   Mipymes\n   Mipyme\n   Micro, pequeñas y medianas empresas\n   Pyme\n   Economía\n   Comercio electrónico\n   eCommerce\n   Paraguayos por el mundo\n\n2. Si coincide con al menos una palabra clave, devuelve un **array JSON válido** con todos los objetos encontrados.  \nEjemplo de salida:\n\n[\n  {\n    \"title\": \"Noticia 1\",\n    \"link\": \"https://...\"\n  },\n  {\n    \"title\": \"Noticia 2\",\n    \"link\": \"https://...\"\n  }\n]\n\n3. Si no coincide ninguna, devuelve un array vacío: []\n4. Es posible que algunas letras sean \"�\" reemplazalas por lo que creas conveniente ejemplo si dice \"Canci�n\" entonces seria \"Canción\" y así para todas las vocales con tildes y \"ñ\".\n5. Solo retorna entre 1 y 5 coincidencias no más\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        768
+      ],
+      "id": "92f54a71-db81-4d0a-8a07-324a8b0c4989",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "83675318-6098-4ee3-8f13-029887948a2c",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        976,
+        768
+      ],
+      "id": "ed1d64bd-e228-4f13-9a09-f27e659ff21e",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Repara caracteres mal codificados típicos (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  return str\n    .replace(/�/g, \"ñ\")   // ñ\n    .replace(/Ã¡/g, \"á\")  // á\n    .replace(/Ã©/g, \"é\")  // é\n    .replace(/Ã­/g, \"í\")  // í\n    .replace(/Ã³/g, \"ó\")  // ó\n    .replace(/Ãº/g, \"ú\")  // ú\n    .replace(/Ã±/g, \"ñ\")  // ñ\n    .replace(/\\s+/g, \" \") // limpia saltos de línea\n    .trim();\n}\n\nconst output = items[0].json.output || [];\nconst results = [];\n\nfor (let i = 0; i < output.length; i++) {\n  results.push({\n    json: {\n      title: fixEncoding(output[i].title),\n      link: output[i].link\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        768
+      ],
+      "id": "45bc5c94-6a33-4b5a-9fd4-c93f5fd45550",
+      "name": "Code5",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        976
+      ],
+      "id": "d6cf9405-bf25-4f7e-b963-c8fa11a16d5b",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://agent_dashboard:5000/links/all",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        1504
+      ],
+      "id": "b7931541-5f2b-4e20-b6fa-3fb92ad7b2cc",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Suponiendo que los items llegan en items[0].json.results\nconst results = $input.first().json.result || []; \nconst filtered = results.filter(item => item.nota === \"No\");\n\n// Retornamos cada resultado como un item separado\nreturn filtered.map(item => ({ json: item }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        1504
+      ],
+      "id": "16362cea-6d4c-48b3-96f9-6df0c7929789",
+      "name": "Code6"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "ULTIMA HORA",
+                    "rightValue": "={{ $json.medio }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "6670620d-3fa1-471f-bd18-a309d25ed028"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ULTIMA HORA"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "824dbf4c-b03d-4dbd-a7d4-fd8571142e79",
+                    "leftValue": "FORBES PY",
+                    "rightValue": "={{ $json.medio }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "FORBES PY"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "708934a2-a322-40b2-8390-6c0794a05260",
+                    "leftValue": "LA NACIÓN",
+                    "rightValue": "={{ $json.medio }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LA NACIÓN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        144,
+        1488
+      ],
+      "id": "858b365f-06f2-4042-8cab-6a9beda97acc",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1488,
+        1472
+      ],
+      "id": "40cd033c-3837-488d-9aae-436c1e58e644",
+      "name": "HTTP Request7",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "nota_text",
+              "cssSelector": ".content p",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": "link[rel=\"canonical\"]",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1648,
+        1472
+      ],
+      "id": "f449816e-8783-4040-980b-d78725a77cf1",
+      "name": "HTML3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Separar los items con texto y los items con id_link\nconst itemsConTexto = items.filter(i => i.json.nota_text);\nconst itemsConId = items.filter(i => i.json.id_link);\n\n// Combinar por \"link\"\nconst resultado = itemsConTexto.map(txtItem => {\n  const match = itemsConId.find(idItem => idItem.json.link === txtItem.json.link);\n  const notaText = Array.isArray(txtItem.json.nota_text)\n    ? txtItem.json.nota_text.map(p => p.trim()).join(\"\\n\\n\")\n    : \"\";\n\n  return {\n    json: {\n      nota_text: notaText,\n      nota_link: txtItem.json.link,\n      id_link: match ? match.json.id_link : null\n    }\n  };\n});\n\nreturn resultado;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        1568
+      ],
+      "id": "4a80cf29-dcb8-45ae-821c-f87053caab8e",
+      "name": "Code7",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.nota_text }}",
+        "options": {
+          "systemMessage": "=## Prompt: Generación de Noticia Periodística en Formato JSON\n\n## Introducción\n\n- **YOU ARE** un **PERIODISTA PROFESIONAL** especializado en redacción de noticias claras, objetivas y atractivas para distintos canales de comunicación.  \n(Context: \"Tu misión es transformar un texto fuente en una nota periodística con formato editorial profesional.\")\n\n## Tarea Principal\n\n- **YOUR TASK IS** to **READ** el texto proporcionado como insumo (la noticia en bruto) y **CONVERTIRLO** en una nota periodística lista para publicarse, respondiendo exclusivamente en formato JSON con la siguiente estructura:  \n\n```json\n{\n  \"titulo\": \"Aquí el título de la nota\",\n  \"nota\": \"Aquí el cuerpo de la nota con cierre o pie periodístico\",\n  \"titulo_rrss\": \"Aquí un título para redes sociales, llamativo y con emojis, entre 30 y 50 palabras\",\n  \"titulo_flyer\": \"Aquí un breve título para flyer/imagen, descriptivo, entre 5 y 15 palabras\",\n\"id_link\":\"{{ $json.id_link }}\"\n}\nSiempre pon el id_link  \" {{ $json.id_link }} \" , no te puede olvidar."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2304,
+        1568
+      ],
+      "id": "9b724833-d256-4ec3-bb3a-0db1687f8b86",
+      "name": "AI Agent3",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2208,
+        1792
+      ],
+      "id": "d3302dee-1d01-4e18-b654-41bfe9dd93c9",
+      "name": "OpenAI Chat Model3",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "216a8046-80d8-4c79-b07d-cc4e3c316f84",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2640,
+        1568
+      ],
+      "id": "6444214b-3599-4753-8d3e-4bb4b77f071c",
+      "name": "Edit Fields6",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/notes/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "titulo",
+              "value": "={{ $('Edit Fields6').item.json.output.titulo }}"
+            },
+            {
+              "name": "id_categoria",
+              "value": "1"
+            },
+            {
+              "name": "content",
+              "value": "=Titulo: {{ $('Edit Fields6').item.json.output.titulo }}\n\n{{ $('Edit Fields6').item.json.output.nota }}\n\n\n\nTitulo RRSS:\n\n{{ $('Edit Fields6').item.json.output.titulo_rrss }}\n\nTitulo Flyer:\n\n{{ $('Edit Fields6').item.json.output.titulo_flyer }}"
+            },
+            {
+              "name": "link_id",
+              "value": "={{ $json.link_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3248,
+        1568
+      ],
+      "id": "04ed696a-5670-45f7-a49f-12b9facee493",
+      "name": "HTTP Request8",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f83e9b6f-15dd-4f31-979e-7fa359388ec2",
+              "name": "id_link",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "4c1756f6-69a5-4353-9cdf-d62c7fb25897",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        1552
+      ],
+      "id": "a521e951-4940-45db-8402-45a7be66c924",
+      "name": "Edit Fields7",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aceb17b3-1e15-4857-ada9-8dba3ab29d5c",
+              "name": "link_id",
+              "value": "={{ $json.output.id_link }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2848,
+        1568
+      ],
+      "id": "3f6a3260-7b70-43eb-b123-57817deb0521",
+      "name": "Edit Fields8",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1488,
+        1792
+      ],
+      "id": "eb77f8c7-078c-48db-b262-ffbc0e73bae7",
+      "name": "HTTP Request9",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "nota_text",
+              "cssSelector": ".article-body .ab-item .pa-c p",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": "link[rel=\"canonical\"]",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        1792
+      ],
+      "id": "147befff-6502-4717-983e-58cff634a587",
+      "name": "HTML4",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const notaText = Array.isArray(item.json.nota_text)\n    ? item.json.nota_text.map(p => p.trim()).join(\"\\n\\n\")\n    : \"\";\n\n  return {\n    json: {\n      nota_text: notaText,\n      nota_link: item.json.link,\n      id_link: item.json.id_link   // 👈 así accedes al valor\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2112,
+        1920
+      ],
+      "id": "42d1bca8-00d1-4801-8f27-8f6e4b419734",
+      "name": "Code8",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.nota_text }}",
+        "options": {
+          "systemMessage": "=## Prompt: Generación de Noticia Periodística en Formato JSON\n\n## Introducción\n\n- **YOU ARE** un **PERIODISTA PROFESIONAL** especializado en redacción de noticias claras, objetivas y atractivas para distintos canales de comunicación.  \n(Context: \"Tu misión es transformar un texto fuente en una nota periodística con formato editorial profesional.\")\n\n## Tarea Principal\n\n- **YOUR TASK IS** to **READ** el texto proporcionado como insumo (la noticia en bruto) y **CONVERTIRLO** en una nota periodística lista para publicarse, respondiendo exclusivamente en formato JSON con la siguiente estructura:  \n\n```json\n{\n  \"titulo\": \"Aquí el título de la nota\",\n  \"nota\": \"Aquí el cuerpo de la nota con cierre o pie periodístico\",\n  \"titulo_rrss\": \"Aquí un título para redes sociales, llamativo y con emojis, entre 30 y 50 palabras\",\n  \"titulo_flyer\": \"Aquí un breve título para flyer/imagen, descriptivo, entre 5 y 15 palabras\",\n\"id_link\":\"{{ $json.id_link }}\"\n}\nSiempre pon el id_link  \" {{ $json.id_link }} \" , no te puede olvidar."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        1920
+      ],
+      "id": "24d5bc83-90f1-4dc9-9c6b-34dfec88dce2",
+      "name": "AI Agent4",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2384,
+        2160
+      ],
+      "id": "c5b6d2df-0f53-4105-a5d3-a7b417e091e2",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "216a8046-80d8-4c79-b07d-cc4e3c316f84",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2640,
+        1920
+      ],
+      "id": "6cbb5260-ca63-49f7-8a8d-6ea87b029c14",
+      "name": "Edit Fields9",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/notes/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "titulo",
+              "value": "={{ $('Edit Fields9').item.json.output.titulo }}"
+            },
+            {
+              "name": "id_categoria",
+              "value": "1"
+            },
+            {
+              "name": "content",
+              "value": "=Titulo: {{ $('Edit Fields9').item.json.output.titulo }}\n\n{{ $('Edit Fields9').item.json.output.nota }}\n\n\n\nTitulo RRSS:\n\n{{ $('Edit Fields9').item.json.output.titulo_rrss }}\n\nTitulo Flyer:\n\n{{ $('Edit Fields9').item.json.output.titulo_flyer }}"
+            },
+            {
+              "name": "link_id",
+              "value": "={{ $json.link_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3232,
+        1920
+      ],
+      "id": "2e55a275-3f6a-4b63-8b2f-6952782944f7",
+      "name": "HTTP Request10",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f83e9b6f-15dd-4f31-979e-7fa359388ec2",
+              "name": "id_link",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "4c1756f6-69a5-4353-9cdf-d62c7fb25897",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        1904
+      ],
+      "id": "fb93e1d7-7d64-40d6-ac43-a047ae0f5ed5",
+      "name": "Edit Fields10",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aceb17b3-1e15-4857-ada9-8dba3ab29d5c",
+              "name": "link_id",
+              "value": "={{ $json.output.id_link }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2848,
+        1920
+      ],
+      "id": "f1d470da-7260-44b4-be4d-8f743666d0ed",
+      "name": "Edit Fields11",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1456,
+        1152
+      ],
+      "id": "5477810d-ee85-469c-b0f2-2636f01e57aa",
+      "name": "HTTP Request11",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "nota_text",
+              "cssSelector": ".Page-twoColumn .Page-main .Page-articleBody .RichTextArticleBody p",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": "link[rel=\"canonical\"]",
+              "returnValue": "attribute",
+              "attribute": "href"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1648,
+        1152
+      ],
+      "id": "555b1bd4-1ff6-4125-88dc-4dac9c2abc81",
+      "name": "HTML5",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Separar los items con texto y los items con id_link\nconst itemsConTexto = items.filter(i => i.json.nota_text);\nconst itemsConId = items.filter(i => i.json.id_link);\n\n// Combinar por \"link\"\nconst resultado = itemsConTexto.map(txtItem => {\n  const match = itemsConId.find(idItem => idItem.json.link === txtItem.json.link);\n  const notaText = Array.isArray(txtItem.json.nota_text)\n    ? txtItem.json.nota_text.map(p => p.trim()).join(\"\\n\\n\")\n    : \"\";\n\n  return {\n    json: {\n      nota_text: notaText,\n      nota_link: txtItem.json.link,\n      id_link: match ? match.json.id_link : null\n    }\n  };\n});\n\nreturn resultado;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        1264
+      ],
+      "id": "5e84ae3e-f5d8-4bab-8c93-31e0c5ac0fc4",
+      "name": "Code9",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.nota_text }}",
+        "options": {
+          "systemMessage": "=## Prompt: Generación de Noticia Periodística en Formato JSON\n\n## Introducción\n\n- **YOU ARE** un **PERIODISTA PROFESIONAL** especializado en redacción de noticias claras, objetivas y atractivas para distintos canales de comunicación.  \n(Context: \"Tu misión es transformar un texto fuente en una nota periodística con formato editorial profesional.\")\n\n## Tarea Principal\n\n- **YOUR TASK IS** to **READ** el texto proporcionado como insumo (la noticia en bruto) y **CONVERTIRLO** en una nota periodística lista para publicarse, respondiendo exclusivamente en formato JSON con la siguiente estructura:  \n\n```json\n{\n  \"titulo\": \"Aquí el título de la nota\",\n  \"nota\": \"Aquí el cuerpo de la nota con cierre o pie periodístico\",\n  \"titulo_rrss\": \"Aquí un título para redes sociales, llamativo y con emojis, entre 30 y 50 palabras\",\n  \"titulo_flyer\": \"Aquí un breve título para flyer/imagen, descriptivo, entre 5 y 15 palabras\",\n\"id_link\":\"{{ $json.id_link }}\"\n}\nSiempre pon el id_link  \" {{ $json.id_link }} \" , no te puede olvidar."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2512,
+        1248
+      ],
+      "id": "6a25f623-ed1c-4249-a188-575198fab226",
+      "name": "AI Agent5",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2384,
+        1456
+      ],
+      "id": "a589e55b-92d4-45a1-8755-11680a8a29de",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "216a8046-80d8-4c79-b07d-cc4e3c316f84",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2848,
+        1248
+      ],
+      "id": "1e48b2e2-3fbe-44f6-a4a3-f50d6f5ff14e",
+      "name": "Edit Fields12",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/notes/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "titulo",
+              "value": "={{ $('Edit Fields12').item.json.output.titulo }}"
+            },
+            {
+              "name": "id_categoria",
+              "value": "1"
+            },
+            {
+              "name": "content",
+              "value": "=Titulo: {{ $('Edit Fields12').item.json.output.titulo }}\n\n{{ $('Edit Fields12').item.json.output.nota }}\n\n\n\nTitulo RRSS:\n\n{{ $('Edit Fields12').item.json.output.titulo_rrss }}\n\nTitulo Flyer:\n\n{{ $('Edit Fields12').item.json.output.titulo_flyer }}"
+            },
+            {
+              "name": "link_id",
+              "value": "={{ $json.link_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3456,
+        1248
+      ],
+      "id": "108d764c-785e-4e77-9c7e-091497f98b57",
+      "name": "HTTP Request12",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f83e9b6f-15dd-4f31-979e-7fa359388ec2",
+              "name": "id_link",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "4c1756f6-69a5-4353-9cdf-d62c7fb25897",
+              "name": "link",
+              "value": "={{ $json.link }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1296,
+        1344
+      ],
+      "id": "4b0295fb-6a75-4138-9cf7-b4f0990db79d",
+      "name": "Edit Fields13",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "aceb17b3-1e15-4857-ada9-8dba3ab29d5c",
+              "name": "link_id",
+              "value": "={{ $json.output.id_link }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3056,
+        1248
+      ],
+      "id": "1258a177-3185-4557-8965-03ef9a20c213",
+      "name": "Edit Fields14",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1a1aa722-88f7-4ec7-b2d7-3fb35c6d1a17",
+              "leftValue": "={{ $json.nota }}",
+              "rightValue": "=No",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        1648
+      ],
+      "id": "798639be-db40-4b6e-9db4-ee68107493b5",
+      "name": "If",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "79a39251-ae5e-4c52-a1ba-7a319313f2dd",
+              "leftValue": "={{ $json.nota }}",
+              "rightValue": "No",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        1488
+      ],
+      "id": "3b9b66b9-f531-4491-9bb7-59a6351bd86a",
+      "name": "If1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "438876bc-5ebc-4f47-9744-d1096d1883f6",
+              "leftValue": "={{ $json.nota }}",
+              "rightValue": "=No",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        1344
+      ],
+      "id": "e25aabcc-bc0a-4ce4-921c-06a0d7af58e8",
+      "name": "If2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1872,
+        1280
+      ],
+      "id": "33d77f06-b60b-4529-bf56-2305995ec000",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1872,
+        1568
+      ],
+      "id": "86b40b42-2de9-417e-80d5-61808a6700df",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1872,
+        1920
+      ],
+      "id": "34aab243-4eed-4c57-b44c-0328f5a43dfe",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -464,
+        -160
+      ],
+      "id": "7522658e-3834-4565-8843-139e9ea3be1d",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {
+    "HTTP Request5": [
+      {
+        "json": {
+          "name": "First item",
+          "code": 1
+        }
+      },
+      {
+        "json": {
+          "name": "Second item",
+          "code": 2
+        }
+      }
+    ]
+  },
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTML1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML1": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "HTML2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML2": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields4": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Code6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code6": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "HTML3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML3": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code7": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields6": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields8": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request9": {
+      "main": [
+        [
+          {
+            "node": "HTML4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML4": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code8": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields9": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields10": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request9",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields11": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request11": {
+      "main": [
+        [
+          {
+            "node": "HTML5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML5": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code9": {
+      "main": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent5": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields12": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields13": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request11",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields14": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request10": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        []
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c9d00c02-b68d-48b8-a395-518469cbdefe",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "92c6a3c05e6b3f1aaacba8d64b3df43b9c41210374aae38fc578c665c3a3e353"
+  },
+  "id": "j78AphFUlPXdq8fJ",
+  "tags": []
+}

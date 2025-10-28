@@ -22,7 +22,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.agent_dashboard.rule=Host(`${DOMAIN_HOST}`) && PathPrefix(`/agent-journalist`)"
-      - "traefik.http.routers.agent_dashboard.entrypoints=web"
+      - "traefik.http.routers.agent_dashboard.entrypoints=websecure"
+      - "traefik.http.routers.agent_dashboard.tls=true"
       - "traefik.http.services.agent_dashboard.loadbalancer.server.port=5000"
       - "traefik.http.middlewares.agent_dashboard-strip.stripprefix.prefixes=/agent-journalist"
       - "traefik.http.middlewares.agent_dashboard-strip.stripprefix.forceSlash=true"
