@@ -20,17 +20,19 @@ def create_link_handler():
         titulo = data.get("titulo")
         link = data.get("link")
         nota = data.get("nota")
-        if not medio or not titulo or not link or nota is None:
+        id_categoria = data.get("id_categoria")
+        if not medio or not titulo or not link or nota is None or not id_categoria:
             return jsonify({
                 "status": False,
-                "message": "Faltan variables obligatorias: 'medio', 'titulo', 'link', 'nota'. Formato esperado: { 'medio': str, 'titulo': str, 'link': str, 'fecha': str, 'nota': str }"
+                "message": "Faltan variables obligatorias: 'medio', 'titulo', 'link', 'nota', 'id_categoria'. Formato esperado: { 'medio': str, 'titulo': str, 'link': str, 'fecha': str, 'nota': str, 'id_categoria': int }"
             }), 400
         result = links_controller.create({
             'medio': medio,
             'titulo': titulo,
             'link': link,
             'fecha': now,
-            'nota': nota
+            'nota': nota,
+            'id_categoria': id_categoria
         })
         return jsonify({"status": True, "result": result})
     except Exception as e:

@@ -19,15 +19,16 @@ class Links:
         Retorna el id insertado.
         """
         query = """
-            INSERT INTO links (medio, titulo, link, fecha, nota)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO links (medio, titulo, link, fecha, nota, id_categoria)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
         params = (
             data.get('medio'),
             data.get('titulo'),
             data.get('link'),
             data.get('fecha'),
-            data.get('nota')
+            data.get('nota'),
+            data.get('id_categoria')
         )
         return self.db.insert_query(query, params)
 
@@ -53,7 +54,7 @@ class Links:
         """
         fields = []
         params = []
-        for key in ['medio', 'titulo', 'link', 'fecha', 'nota']:
+        for key in ['medio', 'titulo', 'link', 'fecha', 'nota', 'id_categoria']:
             if key in data:
                 fields.append(f"{key} = %s")
                 params.append(data[key])
