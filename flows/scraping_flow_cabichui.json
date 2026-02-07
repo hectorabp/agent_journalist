@@ -1,0 +1,1225 @@
+{
+  "name": "scraping_flow_cabichui",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1712,
+        -912
+      ],
+      "id": "5eb67aef-b1ad-4f44-8390-d755c9503b0c",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://www.ultimahora.com/nacionales",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        -912
+      ],
+      "id": "5b0eb4cf-6fb5-470b-9109-856e92a1a200",
+      "name": "HTTP Ultima Hora"
+    },
+    {
+      "parameters": {
+        "content": "## Actualidad",
+        "height": 992,
+        "width": 2560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2704,
+        -1184
+      ],
+      "typeVersion": 1,
+      "id": "9d771352-d8f5-4efe-9a42-f86e4b060dad",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1712,
+        -720
+      ],
+      "id": "97d306c6-067e-4a62-a44d-59e51bbfe0e2",
+      "name": "Edit Fields15"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1248,
+        -544
+      ],
+      "id": "4a21f040-8d9c-413f-85da-1ff39e54cdf9",
+      "name": "OpenAI Chat Model6",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1712,
+        -528
+      ],
+      "id": "80c7bc1c-700e-456c-89f3-b1f4ac5f18ec",
+      "name": "Edit Fields17"
+    },
+    {
+      "parameters": {
+        "url": "https://www.abc.com.py/nacionales/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        -528
+      ],
+      "id": "6360447b-4efd-4244-876c-52fc4de632ea",
+      "name": "HTTP ABC"
+    },
+    {
+      "parameters": {
+        "url": "https://www.lanacion.com.py/category/pais/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        -720
+      ],
+      "id": "9aa0a596-3621-4313-8bfd-590d8f3be612",
+      "name": "HTTP LA NACIÓN"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1456,
+        -736
+      ],
+      "id": "66381d30-c877-47e6-b575-b2f67dc56f32",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Repara caracteres mal codificados típicos (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  return str\n    .replace(/�/g, \"ñ\")   // ñ\n    .replace(/Ã¡/g, \"á\")  // á\n    .replace(/Ã©/g, \"é\")  // é\n    .replace(/Ã­/g, \"í\")  // í\n    .replace(/Ã³/g, \"ó\")  // ó\n    .replace(/Ãº/g, \"ú\")  // ú\n    .replace(/Ã±/g, \"ñ\")  // ñ\n    .replace(/\\s+/g, \" \") // limpia saltos de línea\n    .trim();\n}\n\nconst output = items[0].json.output || [];\nconst results = [];\n\nfor (let i = 0; i < output.length; i++) {\n  results.push({\n    json: {\n      title: fixEncoding(output[i].title),\n      link: output[i].link,\n      medio: output[i].medio  // <--- ¡Agrega esta línea!\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        -720
+      ],
+      "id": "6230b16a-6858-4622-97ae-f4b155d7db54",
+      "name": "Limpieza_caracteres",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a7a9669-4922-4c4e-8109-5640fe4888ce",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        -720
+      ],
+      "id": "ad9e21ea-29db-4489-a495-31bc6e2a904f",
+      "name": "Normalizar_noticias"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/links/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "medio",
+              "value": "={{ $json.medio }}"
+            },
+            {
+              "name": "titulo",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $json.link }}"
+            },
+            {
+              "name": "fecha",
+              "value": "={{ $now }}"
+            },
+            {
+              "name": "nota",
+              "value": "No"
+            },
+            {
+              "name": "id_categoria",
+              "value": "2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -416,
+        -720
+      ],
+      "id": "56489a1a-49f8-4187-a445-fd4a33633bda",
+      "name": "HTTP Insertar_noticias",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".PageList-items-item .PagePromo-content .PagePromo-title a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": ".PageList-items-item .PagePromo-content .PagePromo-title a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        -912
+      ],
+      "id": "465546d1-ea2e-4329-814d-8082667147c9",
+      "name": "HTML Recuperar_noticias_ULTIMA_HORA"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".clnc.ws-ln .tc > a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": "div.cln.ccp div.tc > a[href^=\"/pais/\"]",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        -720
+      ],
+      "id": "a17fff28-d284-4c87-89b9-076eac2dc07b",
+      "name": "HTML Recuperar_noticias_LA_NACION"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".col-lg-8 .item-article .article-title span",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": ".item-article .article-info a[href]",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        -528
+      ],
+      "id": "9be6b3a1-359c-4641-a156-bb9291f2e23b",
+      "name": "HTML Recuperar_noticias_ABC"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\").toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\nsearch.push({\n  title: fixEncoding(titles[i]),\n  link: links[i] || null,\n  medio: \"ULTIMA HORA\" // <--- Agrega esto\n});\n}\n\nreturn [\n  {\n    json: {\n      search\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        -912
+      ],
+      "id": "4fa0bd3c-aeee-452c-b53e-e01649ca6263",
+      "name": "Apilar_noticias_ultima_hora"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\")\n      .toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst BASE_URL = \"https://www.lanacion.com.py\";\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\n  const cleanLink = links[i]\n    ? `${BASE_URL}${links[i]}`\n    : null;\n\nsearch.push({\n  title: fixEncoding(titles[i]),\n  link: links[i] || null,\n  medio: \"LA NACIÓN\"\n});\n}\n\nreturn [\n  {\n    json: {\n      search,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        -720
+      ],
+      "id": "cc63c163-ef30-4355-a0ce-f438d96ff13f",
+      "name": "Apilar_noticias_la_nacion"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\")\n      .toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst BASE_URL = \"https://www.abc.com.py\";\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\n  const cleanLink = links[i]\n    ? `${BASE_URL}${links[i]}`\n    : null;\n\nsearch.push({\n  title: fixEncoding(titles[i]),\n  link: links[i] || null,\n  medio: \"ABC\"\n});\n}\n\nreturn [\n  {\n    json: {\n      search,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        -528
+      ],
+      "id": "895966de-3c17-4f31-958a-9841fd44cfbe",
+      "name": "Apilar_noticias_abc"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.search }}",
+        "options": {
+          "systemMessage": "=Eres un Editor Jefe de un portal de noticias virales en Paraguay, experto en identificar contenido de alto impacto, polémica y sucesos.\n\nTU OBJETIVO:\nProcesar una lista bruta de noticias de diferentes medios (ABC, La Nación, Última Hora), limpiarlas, eliminar duplicados (noticias repetidas entre medios) y seleccionar solo el Top 3 más viral.\n\nENTRADA:\nRecibirás un array de objetos JSON. Cada objeto tiene: \"title\", \"link\" y \"medio\".\n\nTUS TAREAS (EJECUTAR EN ORDEN):\n\n1. LIMPIEZA DE TEXTO:\nRevisa los campos \"title\". Corrige errores de codificación (mojibakes) y caracteres rotos. Reemplaza símbolos extraños por la vocal con tilde o la \"ñ\" adecuada.\nEjemplo: \"CanciÃ³n\" -> \"Canción\", \"NiÃ±a\" -> \"Niña\".\n\n2. DEDUPLICACIÓN INTELIGENTE (IMPORTANTE):\nIdentifica noticias que hablen exactamente del MISMO evento, aunque vengan de medios distintos.\n- Si ABC y Última Hora cubren el mismo asalto, NO incluyas los dos.\n- Compara sus titulares y quédate SOLO con la versión que tenga el título más impactante o clickbait. Descarta la otra versión.\n\n3. FILTRADO POR IMPACTO:\nDe las noticias únicas resultantes, selecciona solo las que cumplan con criterios de alto interés masivo:\n- Crimen y Policiales: Robos, asaltos, sicariato, justicia por mano propia.\n- Indignación Social: Corrupción descarada, planillerismo, negligencia médica o estatal.\n- Tragedias: Accidentes fatales, incendios grandes.\n- Morbo/Curiosidad: Escándalos sexuales, sucesos extraños, polémicas de farándula.\n\n4. SELECCIÓN FINAL:\nElige las 3 mejores noticias de la lista filtrada.\n\nFORMATO DE SALIDA:\nDevuelve EXCLUSIVAMENTE un Array JSON válido con los 3 objetos seleccionados.\n- Debes conservar el \"link\" y el \"medio\" original de la noticia ganadora.\n- No uses bloques de código markdown (```json). Solo el texto plano del JSON.\n\nEJEMPLO DE SALIDA EXACTA:\n[\n  {\n    \"title\": \"Motochorro termina llorando tras ser atrapado por vecinos\",\n    \"link\": \"https://www.abc.com.py/...\",\n    \"medio\": \"ABC\"\n  },\n  {\n    \"title\": \"Escándalo en el Senado: Graban a legislador durmiendo\",\n    \"link\": \"https://www.lanacion.com.py/...\",\n    \"medio\": \"LA NACIÓN\"\n  },\n  {\n    \"title\": \"Terrible accidente deja dos fallecidos en ruta 2\",\n    \"link\": \"https://www.ultimahora.com/...\",\n    \"medio\": \"ULTIMA HORA\"\n  }\n]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1248,
+        -720
+      ],
+      "id": "cd76dbda-a88a-470b-ab9e-7f38dbe9f653",
+      "name": "Agente_filtrar_noticias"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1712,
+        192
+      ],
+      "id": "7d7e9451-d26a-4bd5-bdfa-fac75e47a78f",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "## Farandula",
+        "height": 992,
+        "width": 2560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2704,
+        -80
+      ],
+      "typeVersion": 1,
+      "id": "a6ca1c24-cb42-4c88-8836-89ae8ec55edc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1712,
+        384
+      ],
+      "id": "b03ae265-9f57-42b4-a43c-0cbd12530b9b",
+      "name": "Edit Fields16"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1248,
+        560
+      ],
+      "id": "9c2a35c1-dfbc-42d1-ad25-c8e16c47043a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "krp9PufNs7D16WmX",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d426a44-0683-40cd-98a2-8cf60f0f1b3f",
+              "name": "search",
+              "value": "={{ $json.search }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1712,
+        576
+      ],
+      "id": "f82730bc-1f1f-4287-8fb3-4873ac5d4c04",
+      "name": "Edit Fields18"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1456,
+        368
+      ],
+      "id": "05aead97-80cf-408e-b29d-e315579c2573",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Repara caracteres mal codificados típicos (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  return str\n    .replace(/�/g, \"ñ\")   // ñ\n    .replace(/Ã¡/g, \"á\")  // á\n    .replace(/Ã©/g, \"é\")  // é\n    .replace(/Ã­/g, \"í\")  // í\n    .replace(/Ã³/g, \"ó\")  // ó\n    .replace(/Ãº/g, \"ú\")  // ú\n    .replace(/Ã±/g, \"ñ\")  // ñ\n    .replace(/\\s+/g, \" \") // limpia saltos de línea\n    .trim();\n}\n\nconst output = $input.first().json.output;\nconst results = [];\n\nfor (let i = 0; i < output.length; i++) {\n  results.push({\n    json: {\n      title: fixEncoding(output[i].title),\n      link: output[i].link,\n      medio: output[i].medio  // <--- ¡Agrega esta línea!\n    }\n  });\n}\n\nreturn results;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        384
+      ],
+      "id": "1dae151c-bc03-4986-a8f6-827f865b1ce1",
+      "name": "Limpieza_caracteres1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3a7a9669-4922-4c4e-8109-5640fe4888ce",
+              "name": "output",
+              "value": "={{ $json.output }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        384
+      ],
+      "id": "19df9b28-f519-45b9-a920-4e039c6061b9",
+      "name": "Normalizar_noticias1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://agent_dashboard:5000/links/create",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "medio",
+              "value": "={{ $json.medio }}"
+            },
+            {
+              "name": "titulo",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "name": "link",
+              "value": "={{ $json.link }}"
+            },
+            {
+              "name": "fecha",
+              "value": "={{ $now }}"
+            },
+            {
+              "name": "nota",
+              "value": "No"
+            },
+            {
+              "name": "id_categoria",
+              "value": "3"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -416,
+        384
+      ],
+      "id": "64b40260-71e5-4e02-a8d9-e0c9be7eb8a0",
+      "name": "HTTP Insertar_noticias1",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.search }}",
+        "options": {
+          "systemMessage": "=Eres un Editor Jefe de un portal de noticias virales en Paraguay, experto en identificar contenido de alto impacto, polémica y sucesos.\n\nTU OBJETIVO:\nProcesar una lista bruta de noticias de diferentes medios (ABC, La Nación, Última Hora), limpiarlas, eliminar duplicados (noticias repetidas entre medios) y seleccionar solo el Top 3 más viral.\n\nENTRADA:\nRecibirás un array de objetos JSON. Cada objeto tiene: \"title\", \"link\" y \"medio\".\n\nTUS TAREAS (EJECUTAR EN ORDEN):\n\n1. LIMPIEZA DE TEXTO:\nRevisa los campos \"title\". Corrige errores de codificación (mojibakes) y caracteres rotos. Reemplaza símbolos extraños por la vocal con tilde o la \"ñ\" adecuada.\nEjemplo: \"CanciÃ³n\" -> \"Canción\", \"NiÃ±a\" -> \"Niña\".\n\n2. DEDUPLICACIÓN INTELIGENTE (IMPORTANTE):\nIdentifica noticias que hablen exactamente del MISMO evento, aunque vengan de medios distintos.\n- Si ABC y Última Hora cubren el mismo asalto, NO incluyas los dos.\n- Compara sus titulares y quédate SOLO con la versión que tenga el título más impactante o clickbait. Descarta la otra versión.\n\n3. FILTRADO POR IMPACTO:\nDe las noticias únicas resultantes, selecciona solo las que cumplan con criterios de alto interés masivo:\n- Crimen y Policiales: Robos, asaltos, sicariato, justicia por mano propia.\n- Indignación Social: Corrupción descarada, planillerismo, negligencia médica o estatal.\n- Tragedias: Accidentes fatales, incendios grandes.\n- Morbo/Curiosidad: Escándalos sexuales, sucesos extraños, polémicas de farándula.\n\n4. SELECCIÓN FINAL:\nElige las 3 mejores noticias de la lista filtrada.\n\nFORMATO DE SALIDA:\nDevuelve EXCLUSIVAMENTE un Array JSON válido con los 3 objetos seleccionados.\n- Debes conservar el \"link\" y el \"medio\" original de la noticia ganadora.\n- No uses bloques de código markdown (```json). Solo el texto plano del JSON.\n\nEJEMPLO DE SALIDA EXACTA:\n[\n  {\n    \"title\": \"Motochorro termina llorando tras ser atrapado por vecinos\",\n    \"link\": \"https://www.abc.com.py/...\",\n    \"medio\": \"ABC\"\n  },\n  {\n    \"title\": \"Escándalo en el Senado: Graban a legislador durmiendo\",\n    \"link\": \"https://www.lanacion.com.py/...\",\n    \"medio\": \"LA NACIÓN\"\n  },\n  {\n    \"title\": \"Terrible accidente deja dos fallecidos en ruta 2\",\n    \"link\": \"https://www.ultimahora.com/...\",\n    \"medio\": \"ULTIMA HORA\"\n  }\n]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1248,
+        384
+      ],
+      "id": "90fce370-a911-401c-87d5-3ce74dc88317",
+      "name": "Agente_filtrar_noticias1"
+    },
+    {
+      "parameters": {
+        "url": "https://www.extra.com.py/fama",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        192
+      ],
+      "id": "cf4dc1cd-4fb9-4691-8cbf-fd3041dd21bd",
+      "name": "HTTP EXTRA"
+    },
+    {
+      "parameters": {
+        "url": "https://www.popular.com.py/categoria/farandula/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        384
+      ],
+      "id": "98234f6a-c34f-4b62-b498-21bb13c17819",
+      "name": "HTTP POPULAR"
+    },
+    {
+      "parameters": {
+        "url": "https://www.cronica.com.py/category/farandula/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        576
+      ],
+      "id": "f263e61b-25ae-40de-9bc1-07631613d9cb",
+      "name": "HTTP CRONICA"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".entry-title a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": ".entry-title a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        576
+      ],
+      "id": "a7ae1d77-b197-459d-83d9-6c9c7886c1d6",
+      "name": "HTML Recuperar_noticias_cronica"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": "h5.clamped a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": "h5.clamped a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        384
+      ],
+      "id": "908de82d-c11b-4f28-b0be-8588f2eed1c2",
+      "name": "HTML Recuperar_noticias_popular"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "key": "title",
+              "cssSelector": ".PagePromo-title a",
+              "returnArray": true
+            },
+            {
+              "key": "link",
+              "cssSelector": ".PagePromo-title a",
+              "returnValue": "attribute",
+              "attribute": "href",
+              "returnArray": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -2128,
+        192
+      ],
+      "id": "fdddc0af-2da1-4d93-8f86-1d19ec3f28a3",
+      "name": "HTML Recuperar_noticias_extra"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\")\n      .toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst BASE_URL = \"https://www.abc.com.py\";\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\n  const cleanLink = links[i]\n    ? `${BASE_URL}${links[i]}`\n    : null;\n\nsearch.push({\n  title: fixEncoding(titles[i]),\n  link: links[i] || null,\n  medio: \"CRONICA\"\n});\n}\n\nreturn [\n  {\n    json: {\n      search,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        576
+      ],
+      "id": "7dc69ab7-d2fc-4e56-9b14-80b6b49def50",
+      "name": "Apilar_noticias_cronica"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\")\n      .toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst BASE_URL = \"https://www.lanacion.com.py\";\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\n  const cleanLink = links[i]\n    ? `${BASE_URL}${links[i]}`\n    : null;\n\nsearch.push({\n  title: fixEncoding(titles[i]),\n  link: links[i] || null,\n  medio: \"POPULAR\"\n});\n}\n\nreturn [\n  {\n    json: {\n      search,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        384
+      ],
+      "id": "2cfbfe45-0b0b-43a2-812e-3d73cf17fd5a",
+      "name": "Apilar_noticias_popular"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convierte cadenas mal codificadas (ISO-8859-1 → UTF-8)\nfunction fixEncoding(str) {\n  if (!str) return \"\";\n  try {\n    return Buffer.from(str, \"latin1\").toString(\"utf8\")\n      .replace(/\\s+/g, \" \") // limpia saltos de línea extra\n      .trim();\n  } catch (e) {\n    return str;\n  }\n}\n\nconst titles = items[0].json.title || [];\nconst links = items[0].json.link || [];\n\nconst search = [];\n\nfor (let i = 0; i < titles.length; i++) {\nsearch.push({\n  title: fixEncoding(titles[i]),\n  link: links[i] || null,\n  medio: \"EXTRA\"\n});\n}\n\nreturn [\n  {\n    json: {\n      search\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        192
+      ],
+      "id": "e314f1a9-6f24-40a3-937c-e3b6c08f4eab",
+      "name": "Apilar_noticias_extra"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2608,
+        368
+      ],
+      "id": "c3636df9-7c04-4303-a5d3-e12f5a18a5c9",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Ultima Hora": {
+      "main": [
+        [
+          {
+            "node": "HTML Recuperar_noticias_ULTIMA_HORA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields15": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente_filtrar_noticias",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields17": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "HTTP ABC": {
+      "main": [
+        [
+          {
+            "node": "HTML Recuperar_noticias_ABC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP LA NACIÓN": {
+      "main": [
+        [
+          {
+            "node": "HTML Recuperar_noticias_LA_NACION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Agente_filtrar_noticias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpieza_caracteres": {
+      "main": [
+        [
+          {
+            "node": "HTTP Insertar_noticias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar_noticias": {
+      "main": [
+        [
+          {
+            "node": "Limpieza_caracteres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Recuperar_noticias_ULTIMA_HORA": {
+      "main": [
+        [
+          {
+            "node": "Apilar_noticias_ultima_hora",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Recuperar_noticias_LA_NACION": {
+      "main": [
+        [
+          {
+            "node": "Apilar_noticias_la_nacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Recuperar_noticias_ABC": {
+      "main": [
+        [
+          {
+            "node": "Apilar_noticias_abc",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apilar_noticias_ultima_hora": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apilar_noticias_la_nacion": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apilar_noticias_abc": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields17",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente_filtrar_noticias": {
+      "main": [
+        [
+          {
+            "node": "Normalizar_noticias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields16": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente_filtrar_noticias1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields18": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Agente_filtrar_noticias1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpieza_caracteres1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Insertar_noticias1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar_noticias1": {
+      "main": [
+        [
+          {
+            "node": "Limpieza_caracteres1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente_filtrar_noticias1": {
+      "main": [
+        [
+          {
+            "node": "Normalizar_noticias1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP EXTRA": {
+      "main": [
+        [
+          {
+            "node": "HTML Recuperar_noticias_extra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP POPULAR": {
+      "main": [
+        [
+          {
+            "node": "HTML Recuperar_noticias_popular",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP CRONICA": {
+      "main": [
+        [
+          {
+            "node": "HTML Recuperar_noticias_cronica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Recuperar_noticias_cronica": {
+      "main": [
+        [
+          {
+            "node": "Apilar_noticias_cronica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Recuperar_noticias_popular": {
+      "main": [
+        [
+          {
+            "node": "Apilar_noticias_popular",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Recuperar_noticias_extra": {
+      "main": [
+        [
+          {
+            "node": "Apilar_noticias_extra",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apilar_noticias_cronica": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields18",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apilar_noticias_popular": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apilar_noticias_extra": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP EXTRA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP POPULAR",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP CRONICA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "077ac327-0e50-4927-a5bc-e513c65abd90",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "92c6a3c05e6b3f1aaacba8d64b3df43b9c41210374aae38fc578c665c3a3e353"
+  },
+  "id": "kY5rzsUNMy8p42Nz",
+  "tags": [
+    {
+      "updatedAt": "2026-02-03T12:33:25.586Z",
+      "createdAt": "2026-02-03T12:33:25.586Z",
+      "id": "iz1TOwAtlbvrbTJG",
+      "name": "agent_journalist"
+    }
+  ]
+}

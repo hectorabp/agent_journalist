@@ -1,43 +1,25 @@
 from flask import Blueprint, request, jsonify
-import datetime
 import sys
 from pathlib import Path
 
 # Añadimos el directorio principal al path para poder importar el controlador
 sys.path.append(str(Path(__file__).resolve().parent.parent))
-from modules.links import Links
+from controller.links_controller import LinksController
 
-links_controller = Links()
+links_controller = LinksController()
 links_blueprint = Blueprint("links_routes", __name__)
 
 # --- HANDLERS ---
 
 def create_link_handler():
     try:
-        now = datetime.datetime.now()
         data = request.get_json() or {}
-        medio = data.get("medio")
-        titulo = data.get("titulo")
-        link = data.get("link")
-        nota = data.get("nota")
-        id_categoria = data.get("id_categoria")
-        if not medio or not titulo or not link or nota is None or not id_categoria:
-            return jsonify({
-                "status": False,
-                "message": "Faltan variables obligatorias: 'medio', 'titulo', 'link', 'nota', 'id_categoria'. Formato esperado: { 'medio': str, 'titulo': str, 'link': str, 'fecha': str, 'nota': str, 'id_categoria': int }"
-            }), 400
-        result = links_controller.create({
-            'medio': medio,
-            'titulo': titulo,
-            'link': link,
-            'fecha': now,
-            'nota': nota,
-            'id_categoria': id_categoria
-        })
-        return jsonify({"status": True, "result": result})
+        # Llamamos al controlador que soporta uno o varios links
+        result = links_controller.create_links(data)
+        return jsonify(result)
     except Exception as e:
         print(f"[ERROR_CREATE_LINK]: {e}")
-        return jsonify({"status": False, "message": str(e)}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 def read_link_handler():
     try:
@@ -47,14 +29,14 @@ def read_link_handler():
                 "status": False,
                 "message": "Falta variable obligatoria: 'link_id'. Formato esperado: /links/read?link_id=ID"
             }), 400
-        result = links_controller.get_by_id(link_id)
+        result = links_controller.get_link_by_id(link_id)
         return jsonify({"status": True, "result": result})
     except Exception as e:
         return jsonify({"status": False, "message": str(e)}), 500
 
 def get_all_links_handler():
     try:
-        result = links_controller.get_all()
+        result = links_controller.get_all_links()
         return jsonify({"status": True, "result": result})
     except Exception as e:
         return jsonify({"status": False, "message": str(e)}), 500
@@ -69,7 +51,7 @@ def update_link_handler():
                 "status": False,
                 "message": "Faltan variables obligatorias: 'link_id', 'update_data'. Formato esperado: { 'link_id': int, 'update_data': dict }"
             }), 400
-        result = links_controller.update(link_id, update_data)
+        result = links_controller.update_link(link_id, update_data)
         return jsonify({"status": True, "result": result})
     except Exception as e:
         return jsonify({"status": False, "message": str(e)}), 500
@@ -83,7 +65,7 @@ def delete_link_handler():
                 "status": False,
                 "message": "Falta variable obligatoria: 'link_id'. Formato esperado: { 'link_id': int }"
             }), 400
-        result = links_controller.delete(link_id)
+        result = links_controller.delete_link(link_id)
         return jsonify({"status": True, "result": result})
     except Exception as e:
         return jsonify({"status": False, "message": str(e)}), 500

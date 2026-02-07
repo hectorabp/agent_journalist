@@ -12,18 +12,20 @@ class Links:
     def __init__(self):
         self.db = Database()
 
+    def check_existence(self, link_url):
+        """
+        Verifica si existe un link en la base de datos.
+        """
+        query = "SELECT id FROM links WHERE link = %s LIMIT 1"
+        result = self.db.query(query, (link_url,))
+        return result[0]['id'] if result else None
+
     def create(self, data):
         """
-        Inserta un nuevo registro en la tabla links si no existe previamente el mismo link.
+        Inserta un nuevo registro en la tabla links.
         data: dict con las claves 'medio', 'titulo', 'link', 'fecha', 'nota'
-        Retorna el id insertado, o None si ya existía.
+        Retorna el id insertado.
         """
-        # Verificar si ya existe un registro con ese link
-        check_query = "SELECT id FROM links WHERE link = %s LIMIT 1"
-        existing = self.db.query(check_query, (data.get('link'),))
-        if existing:
-            return None
-
         query = """
             INSERT INTO links (medio, titulo, link, fecha, nota, id_categoria)
             VALUES (%s, %s, %s, %s, %s, %s)
