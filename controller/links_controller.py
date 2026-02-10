@@ -18,7 +18,7 @@ class LinksController:
         Inserta uno o varios links en la base de datos.
         Permite recibir un diccionario (un solo link) o una lista de diccionarios.
         
-        Retorna un resumen de la operación.
+        Retorna un resumen de la operación agrupado por medio.
         """
         # Normalizar entrada a lista
         if isinstance(data, dict):
@@ -28,11 +28,16 @@ class LinksController:
         else:
             return {"status": "error", "message": "Formato de datos inválido. Se espera dict o list."}
 
-        created_ids = []
-        existing_links = []
-        errors = []
+        results_by_media = {}
+        total_created = 0
+        total_existing = 0
+        total_errors = 0
 
         for item in items:
+            medio = item.get('medio', 'Desconocido')
+            if medio not in results_by_media:
+                results_by_media[medio] = {'created': [], 'existing': [], 'errors': []}
+
             try:
                 # Asignar fecha por defecto si no existe
                 if 'fecha' not in item or not item['fecha']:
@@ -43,23 +48,26 @@ class LinksController:
                 existing_id = self.links_model.check_existence(link_url)
                 
                 if existing_id:
-                    existing_links.append(link_url)
+                    results_by_media[medio]['existing'].append(link_url)
+                    total_existing += 1
                 else:
                     # item debe tener keys: 'medio', 'titulo', 'link', 'fecha', 'nota', 'id_categoria'
                     new_id = self.links_model.create(item)
                     if new_id:
-                        created_ids.append({"id": new_id, "link": link_url})
+                        results_by_media[medio]['created'].append({"id": new_id, "link": link_url})
+                        total_created += 1
             except Exception as e:
-                errors.append({"link": item.get('link'), "error": str(e)})
+                results_by_media[medio]['errors'].append({"link": item.get('link'), "error": str(e)})
+                total_errors += 1
 
         return {
             "status": "completed",
-            "created_count": len(created_ids),
-            "existing_count": len(existing_links),
-            "error_count": len(errors),
-            "created_details": created_ids,
-            "existing_details": existing_links,
-            "errors": errors
+            "summary": {
+                "created_count": total_created,
+                "existing_count": total_existing,
+                "error_count": total_errors
+            },
+            "details_by_media": results_by_media
         }
 
     def get_all_links(self):
